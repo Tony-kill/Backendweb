@@ -1,5 +1,5 @@
 require('dotenv').config();
-var cors = require('cors');
+// KHÔNG cần cors package nữa cũng được
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -21,24 +21,21 @@ mongoose.connect();
 
 var app = express();
 
-/* ================== CORS ================== */
-// CORS cho tất cả origin + method, để frontend gọi thoải mái
-app.use(function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header(
+/* ====== CORS cho TẤT CẢ các request ====== */
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader(
     'Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept, Authorization'
   );
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
   }
   next();
 });
-
-// Nếu thích giữ luôn cors package thì thêm cũng được (không bắt buộc)
-app.use(cors());
-/* ========================================== */
+/* ========================================= */
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -50,7 +47,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Routers
+// routers
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/products', productsRouter);
@@ -61,7 +58,7 @@ app.use('/wishlist', wishlistRouter);
 app.use('/statistical', statisticalRouter);
 app.use('/contacts', contactRouter);
 
-// catch 404 and forward to error handler
+// catch 404
 app.use(function (req, res, next) {
   next(createError(404));
 });
@@ -70,7 +67,6 @@ app.use(function (req, res, next) {
 app.use(function (err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
-
   res.status(err.status || 500);
   res.render('error');
 });
