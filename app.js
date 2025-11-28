@@ -1,5 +1,4 @@
 require('dotenv').config();
-// KHÔNG cần cors package nữa cũng được
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -21,7 +20,7 @@ mongoose.connect();
 
 var app = express();
 
-/* ====== CORS cho TẤT CẢ các request ====== */
+/* ============ CORS CHO MỌI REQUEST ============ */
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader(
@@ -35,7 +34,7 @@ app.use((req, res, next) => {
   }
   next();
 });
-/* ========================================= */
+/* =============================================== */
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -58,7 +57,7 @@ app.use('/wishlist', wishlistRouter);
 app.use('/statistical', statisticalRouter);
 app.use('/contacts', contactRouter);
 
-// catch 404
+// catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
 });
@@ -67,6 +66,7 @@ app.use(function (req, res, next) {
 app.use(function (err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
+
   res.status(err.status || 500);
   res.render('error');
 });
