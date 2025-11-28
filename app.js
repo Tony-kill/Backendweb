@@ -4,8 +4,8 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const cors = require('cors');
 
+// Routers
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const productsRouter = require('./routes/products');
@@ -16,24 +16,36 @@ const wishlistRouter = require('./routes/wishlist');
 const statisticalRouter = require('./routes/statistical');
 const contactRouter = require('./routes/contacts');
 
+// Mongo
 const mongoose = require('./config/index');
 mongoose.connect();
 
 const app = express();
 
-/* ============ CORS ============ */
-// Cho phép tất cả origin gọi API (cho demo đồ án)
-const corsOptions = {
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
-};
+/* ============ CORS MỌI NƠI ============ */
+// Cho phép frontend Render + mọi origin khác luôn
+app.use((req, res, next) => {
+  // Cho phép tất cả origin. Nếu muốn chặt, đổi thành:
+  // 'https://frontendweb-attt.onrender.com'
+  res.header('Access-Control-Allow-Origin', '*');
 
-// preflight cho mọi route
-app.options('*', cors(corsOptions));
-// áp dụng cors cho tất cả request
-app.use(cors(corsOptions));
-/* ============================== */
+  // Cho phép mọi loại header client gửi lên
+  res.header('Access-Control-Allow-Headers', '*');
+
+  // Cho phép các method này
+  res.header(
+    'Access-Control-Allow-Methods',
+    'GET, POST, PUT, PATCH, DELETE, OPTIONS'
+  );
+
+  // Nếu là preflight (OPTIONS) thì trả luôn 200
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+/* ====================================== */
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -45,7 +57,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Routers
+// Mount routers
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/products', productsRouter);
