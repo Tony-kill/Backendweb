@@ -4,6 +4,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var cors = require('cors');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -21,19 +22,55 @@ mongoose.connect();
 var app = express();
 
 /* ============ CORS CHO MỌI REQUEST ============ */
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'https://frontendweb-attt.onrender.com' // domain frontend trên Render của bạn
+];
+
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader(
+  const origin = req.headers.origin;
+
+  if (origin && allowedOrigins.includes(origin)) {
+    // cho phép origin frontend
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+  } else {
+    // cho phép tạm cho các origin khác (curl, direct link…)
+    res.header('Access-Control-Allow-Origin', '*');
+  }
+
+  res.header(
     'Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept, Authorization'
   );
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.header(
+    'Access-Control-Allow-Methods',
+    'GET, POST, PUT, PATCH, DELETE, OPTIONS'
+  );
 
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
   }
+
   next();
 });
+
+// dùng thêm cors() cho chắc
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // cho phép request không có origin (Postman, curl…)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        // nếu muốn chặt hơn thì callback(new Error('Not allowed by CORS'));
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
+    credentials: true
+  })
+);
 /* =============================================== */
 
 // view engine setup
@@ -49,7 +86,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // MOUNT CÁC ROUTER
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/products', productsRouter);      // 👈 rất quan trọng
+app.use('/products', productsRouter);
 app.use('/comments', commentsRouter);
 app.use('/carts', cartsRouter);
 app.use('/orders', ordersRouter);
