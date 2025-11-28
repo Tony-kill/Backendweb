@@ -1,77 +1,39 @@
 require('dotenv').config();
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var cors = require('cors');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const cors = require('cors');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var productsRouter = require('./routes/products');
-var commentsRouter = require('./routes/comments');
-var cartsRouter = require('./routes/carts');
-var ordersRouter = require('./routes/orders');
-var wishlistRouter = require('./routes/wishlist');
-var statisticalRouter = require('./routes/statistical');
-var contactRouter = require('./routes/contacts');
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const productsRouter = require('./routes/products');
+const commentsRouter = require('./routes/comments');
+const cartsRouter = require('./routes/carts');
+const ordersRouter = require('./routes/orders');
+const wishlistRouter = require('./routes/wishlist');
+const statisticalRouter = require('./routes/statistical');
+const contactRouter = require('./routes/contacts');
 
-var mongoose = require('./config/index');
+const mongoose = require('./config/index');
 mongoose.connect();
 
-var app = express();
+const app = express();
 
-/* ============ CORS CHO MỌI REQUEST ============ */
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-  'https://frontendweb-attt.onrender.com' // domain frontend trên Render của bạn
-];
+/* ============ CORS ============ */
+// Cho phép tất cả origin gọi API (cho demo đồ án)
+const corsOptions = {
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
+};
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-
-  if (origin && allowedOrigins.includes(origin)) {
-    // cho phép origin frontend
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
-  } else {
-    // cho phép tạm cho các origin khác (curl, direct link…)
-    res.header('Access-Control-Allow-Origin', '*');
-  }
-
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-  );
-  res.header(
-    'Access-Control-Allow-Methods',
-    'GET, POST, PUT, PATCH, DELETE, OPTIONS'
-  );
-
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-
-  next();
-});
-
-// dùng thêm cors() cho chắc
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // cho phép request không có origin (Postman, curl…)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        // nếu muốn chặt hơn thì callback(new Error('Not allowed by CORS'));
-        return callback(null, true);
-      }
-      return callback(null, true);
-    },
-    credentials: true
-  })
-);
-/* =============================================== */
+// preflight cho mọi route
+app.options('*', cors(corsOptions));
+// áp dụng cors cho tất cả request
+app.use(cors(corsOptions));
+/* ============================== */
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -83,7 +45,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// MOUNT CÁC ROUTER
+// Routers
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/products', productsRouter);
