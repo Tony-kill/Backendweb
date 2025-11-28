@@ -46,10 +46,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// routers
+// MOUNT CÁC ROUTER
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/products', productsRouter);
+app.use('/products', productsRouter);      // 👈 rất quan trọng
 app.use('/comments', commentsRouter);
 app.use('/carts', cartsRouter);
 app.use('/orders', ordersRouter);
