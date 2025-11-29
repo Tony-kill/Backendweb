@@ -51,12 +51,40 @@ const signUp = async (req, res, next) => {
   return res.status(201).json({ success: true });
 };
 
+// const signin = async (req, res, next) => {
+//   // assign a token
+//   const token = encodeToken(req.user._id); // user nay duoc nhan tu ben passport o ham done
+//   res.setHeader("Authorization", token);
+//   // console.log(req.user);
+//   return res.status(200).json({ success: true, token: token, info: req.user });
+// };
+
 const signin = async (req, res, next) => {
-  // assign a token
-  const token = encodeToken(req.user._id); // user nay duoc nhan tu ben passport o ham done
-  res.setHeader("Authorization", token);
-  // console.log(req.user);
-  return res.status(200).json({ success: true, token: token, info: req.user });
+  try {
+    console.log("🔥 [DEMO HACK] Dữ liệu nhận được:", req.body);
+
+    // 1. Lấy dữ liệu thô (Hacker gửi object { $ne: ... } vào đây)
+    const { email, password } = req.body;
+
+    // 2. VULNERABLE CODE (Lỗ hổng chết người):
+    // Truy vấn trực tiếp mà không kiểm tra dữ liệu đầu vào.
+    // Nếu password là object { "$ne": "..." } -> Nó vẫn chạy query!
+    const foundUser = await User.findOne({ email, password });
+
+    // 3. Kiểm tra kết quả
+    if (!foundUser) {
+      return res.status(401).json({ error: { message: "Sai tài khoản hoặc mật khẩu!" } });
+    }
+
+    // 4. Đăng nhập thành công -> Tự tạo Token (Vì không dùng Passport nữa)
+    const token = encodeToken(foundUser._id);
+    res.setHeader("Authorization", token);
+    
+    return res.status(200).json({ success: true, token: token, info: foundUser });
+
+  } catch (error) {
+    next(error);
+  }
 };
 
 const secret = async (req, res, next) => {
