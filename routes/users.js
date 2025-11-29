@@ -10,7 +10,7 @@ const passportConfig=require('../middlewares/passport');
 //   res.send('respond with a resource');
 // });
 router.post('/signup',UserController.signUp);
-router.post('/signin',passport.authenticate('local',{session:false}),UserController.signin);
+// router.post('/signin',passport.authenticate('local',{session:false}),UserController.signin);
 router.get('/secret',passport.authenticate('jwt',{session:false}),UserController.secret);
 router.get('/',UserController.getUser);
 router.get('/bin',UserController.getUserBin);
